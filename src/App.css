@@ -1,38 +1,114 @@
 .App {
   text-align: center;
+  --wordle-yellow: #f3c237;
+  --wordle-gray: #333;
+  --wordle-green: #79b851;
+  --active-highlight: #36c;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.wordle-letter {
+  border: 1px solid #000;
+  width: 36px;
+  margin: 1em;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.wordle-letter-text input {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  text-align: center;
+  font-size: 24pt;
+  line-height: 1.5em;
+  background: none;
+  color: #fff;
+  caret-color: transparent;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.wordle-swatch-0 {
+  background-color: var(--wordle-gray);
+  color: var(--wordle-gray);
+}
+.wordle-swatch-1 {
+  background-color: var(--wordle-yellow);
+  color: var(--wordle-yellow);
+}
+.wordle-swatch-2 {
+  background-color: var(--wordle-green);
+  color: var(--wordle-green);
+}
+
+.wordle-letter-swatches {
+  width: 100%;
+  height: 12px;
+  padding: 0;
+  margin: 0;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+}
+
+.wordle-swatch {
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1em;
+}
+
+.wordle-letter-text input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.wordle-letter:focus-within {
+  box-shadow: 0 0 3px 2px var(--active-highlight);
+}
+
+.wordle-letter:focus-within .wordle-swatch {
+  color: #fff !important;
+}
+
+.wordle-word {
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: middle;
 }
 
-.App-link {
-  color: #61dafb;
+.remove-word {
+  width: 20px;
+  font-size: 18pt;
+  font-weight: bold;
+  align-self: center;
+  float: right;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.remove-word a,
+.add-word a {
+  cursor: pointer;
+}
+
+.input-list {
+  height: 50vh;
+  overflow-y: scroll;
+}
+
+.result-list {
+  height: 50vh;
+  overflow-y: scroll;
+}
+
+.results-flex {
+  border-top: 1px solid #000;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.no-result-item {
+  width: 100%;
+}
+
+.result-item {
+  width: 100px;
+  padding: 0.5em 0;
 }
