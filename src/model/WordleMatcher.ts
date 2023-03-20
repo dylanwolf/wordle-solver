@@ -29,6 +29,22 @@ function getAllLettersOfType(model: WordleHistory, letterState: LetterState) {
     .distinct();
 }
 
+function getLettersOfTypeForSlot(
+  model: WordleHistory,
+  letterIndex: number,
+  letterState: LetterState
+) {
+  return model
+    .completeWords()
+    .filter(
+      (w) =>
+        w.letters[letterIndex].letter !== null &&
+        w.letters[letterIndex].state === letterState
+    )
+    .map((w) => w.letters[letterIndex].letter || "")
+    .distinct();
+}
+
 export function createInitialRegex(model: WordleHistory) {
   var result: string[] = [];
 
@@ -37,36 +53,26 @@ export function createInitialRegex(model: WordleHistory) {
 
   // If a letter is entered twice, it might be yellow the first time and gray the second
   // In that case, remove it from gray letters
-  var grayLetters = getAllLettersOfType(model, LetterState.Gray).filter(
+  var allGrayLetters = getAllLettersOfType(model, LetterState.Gray).filter(
     (l) => !allYellowLetters.includes(l) && !allGreenLetters.includes(l)
   );
 
   for (var i = 0; i < model.letterCount; i++) {
     var greenLetter =
-      model
-        .completeWords()
-        .filter(
-          (w) =>
-            w.letters[i].letter !== null &&
-            w.letters[i].state === LetterState.Green
-        )
-        .map((w) => w.letters[i].letter || "")[0] || null;
+      getLettersOfTypeForSlot(model, i, LetterState.Green)[0] || null;
 
     if (greenLetter !== null) {
       // If there is a green letter, it's the only thing this letter can be
       result.push(greenLetter);
     } else {
       // Otherwise, this can be anything other than a gray letter or a yellow letter in this slot
-      var yellowLetters = model
-        .completeWords()
-        .filter(
-          (w) =>
-            w.letters[i].letter !== null &&
-            w.letters[i].state === LetterState.Yellow
-        )
-        .map((w) => w.letters[i].letter || "");
+      var grayLetters = getLettersOfTypeForSlot(model, i, LetterState.Gray);
+      var yellowLetters = getLettersOfTypeForSlot(model, i, LetterState.Yellow);
 
-      var excludedLetters = grayLetters.concat(yellowLetters).distinct();
+      var excludedLetters = allGrayLetters
+        .concat(grayLetters)
+        .concat(yellowLetters)
+        .distinct();
 
       result.push(`[^${excludedLetters.join("")}]`);
     }
