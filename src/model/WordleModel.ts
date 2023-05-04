@@ -1,19 +1,24 @@
+import { action, computed, makeAutoObservable } from "mobx";
 import { WordleHistory } from "./WordleHistory";
-import { LetterState } from "./WordleLetter";
+import { getMatchingWords } from "./WordleMatcher";
 
 export class WordleModel {
+  letterCount: number;
   history: WordleHistory;
 
   constructor(letterCount: number) {
-    this.history = new WordleHistory(letterCount);
+    makeAutoObservable(this);
+    this.letterCount = letterCount;
+    this.history = new WordleHistory(this.letterCount);
     this.history.addWord();
   }
 
-  setLetter(wordIdx: number, letterIdx: number, newValue: string) {
-    this.history.words[wordIdx].letters[letterIdx].letter = newValue;
+  @action reset() {
+    this.history = new WordleHistory(this.letterCount);
+    this.history.addWord();
   }
 
-  setLetterState(wordIdx: number, letterIdx: number, newValue: LetterState) {
-    this.history.words[wordIdx].letters[letterIdx].state = newValue;
+  @computed get results() {
+    return getMatchingWords(this.history);
   }
 }

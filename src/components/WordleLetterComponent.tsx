@@ -1,54 +1,49 @@
-import { KeyboardEvent, KeyboardEventHandler, useContext, useEffect, useRef, useState } from "react"
-import { WordleModelContext } from "../App"
+import { KeyboardEvent, KeyboardEventHandler, useRef } from "react"
 import { LetterState, WordleLetter } from "../model/WordleLetter"
+import { observer } from "mobx-react-lite"
 
 interface WordleLetterComponentProps {
-    wordIndex: number
-    updateResults: () => void
-    letterIndex: number
+    viewModel: WordleLetter
 }
 
 interface WordleLetterComponentSwatchProps {
     state: LetterState
-    onClick: (state: LetterState) => void
+    letter: WordleLetter
+    focusTextBox: () => void
 }
 
-function WordleLetterComponentSwatch(props: WordleLetterComponentSwatchProps) {
-    return <div className={`wordle-swatch wordle-swatch-${props.state.toString()}`}
-        onClick={function () { props.onClick(props.state) }}>{(props.state + 1).toString()}</div>
-}
 
-export function WordleLetterComponent(props: WordleLetterComponentProps) {
-    const ctx = useContext(WordleModelContext)
-    const letter = ctx.history.words[props.wordIndex].letters[props.letterIndex]
-    const [forceRefresh, setForceRefresh] = useState(false)
-
-    function updateComponent() {
-        props.updateResults()
+const WordleLetterComponentSwatch = observer((props: WordleLetterComponentSwatchProps) => {
+    const onClick = function () {
+        props.letter.setLetterState(props.state)
+        props.focusTextBox()
     }
+
+    return <div className={`wordle-swatch wordle-swatch-${props.state.toString()}`}
+        onClick={onClick}>{(props.state + 1).toString()}</div>
+})
+
+export const WordleLetterComponent = observer((props: WordleLetterComponentProps) => {
+    const letter = props.viewModel
 
     const onTextBoxKeyDown: KeyboardEventHandler<HTMLInputElement> = (e: KeyboardEvent) => {
         if (!e.altKey && !e.ctrlKey && !e.metaKey) {
             if (e.key.length === 1 && ((e.key >= 'a' && e.key <= 'z') || (e.key >= 'A' && e.key <= 'Z'))) {
                 // Letter key = set letter
-                ctx.setLetter(props.wordIndex, props.letterIndex, e.key)
-                updateComponent()
+                letter.setLetter(e.key)
                 focusNext()
             } else if (e.key.length === 1 && e.key >= '1' && e.key <= '3') {
                 // 1-3 = set state
-                ctx.setLetterState(props.wordIndex, props.letterIndex, parseInt(e.key) - 1)
-                updateComponent()
+                letter.setLetterState(parseInt(e.key) - 1)
             } else if (e.key === 'Enter' || e.key === 'Tab') {
-                if (props.letterIndex === ctx.history.letterCount - 1 && props.wordIndex === ctx.history.words.length - 1) {
-                    ctx.history.addWord()
-                    updateComponent()
+                if (letter.isLastLetterOfLastWord) {
+                    letter.parent.parent.addWord()
                     setTimeout(focusNext, 10)
                 } else {
                     focusNext()
                 }
-            } else if (e.key === 'Delete' && props.wordIndex !== 0) {
-                ctx.history.removeWord(props.wordIndex)
-                updateComponent()
+            } else if (e.key === 'Delete') {
+                letter.parent.remove()
             }
 
             e.preventDefault()
@@ -65,8 +60,7 @@ export function WordleLetterComponent(props: WordleLetterComponentProps) {
     }
 
     function onStateChange(state: LetterState) {
-        ctx.setLetterState(props.wordIndex, props.letterIndex, state)
-        updateComponent()
+        letter.setLetterState(state)
         focusTextBox()
     }
 
@@ -79,17 +73,17 @@ export function WordleLetterComponent(props: WordleLetterComponentProps) {
     return <div className="wordle-letter">
         <div className={`wordle-letter-text wordle-swatch-${letter.state.toString()}`}>
             <input type="text"
-                autoFocus={props.wordIndex === 0 && props.letterIndex === 0 ? true : undefined}
+                autoFocus={letter.isFirstLetterOfFirstWord ? true : undefined}
                 ref={inputRef}
                 value={letter.letter?.toUpperCase() || ''}
                 maxLength={1}
                 onKeyDown={onTextBoxKeyDown} />
         </div>
         <div className="wordle-letter-swatches">
-            <WordleLetterComponentSwatch state={LetterState.Gray} onClick={onStateChange} />
-            <WordleLetterComponentSwatch state={LetterState.Yellow} onClick={onStateChange} />
-            <WordleLetterComponentSwatch state={LetterState.Green} onClick={onStateChange} />
+            <WordleLetterComponentSwatch state={LetterState.Gray} focusTextBox={focusTextBox} letter={letter} />
+            <WordleLetterComponentSwatch state={LetterState.Yellow} focusTextBox={focusTextBox} letter={letter} />
+            <WordleLetterComponentSwatch state={LetterState.Green} focusTextBox={focusTextBox} letter={letter} />
         </div>
     </div>
 
-}
+})

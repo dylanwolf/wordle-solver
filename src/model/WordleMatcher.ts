@@ -4,7 +4,7 @@ import { LetterState } from "./WordleLetter";
 import { WORDLIST } from "./wordlist";
 
 export function getMatchingWords(model: WordleHistory) {
-  if (model.words.filter((w) => w.isComplete()).length === 0) return [];
+  if (model.words.filter((w) => w.isComplete).length === 0) return [];
 
   var initialRegex = createInitialRegex(model);
 
@@ -18,8 +18,7 @@ export function getMatchingWords(model: WordleHistory) {
 }
 
 function getAllLettersOfType(model: WordleHistory, letterState: LetterState) {
-  return model
-    .completeWords()
+  return model.completeWords
     .map((w) =>
       w.letters
         .filter((l) => l.state === letterState && l.letter !== null)
@@ -34,8 +33,7 @@ function getLettersOfTypeForSlot(
   letterIndex: number,
   letterState: LetterState
 ) {
-  return model
-    .completeWords()
+  return model.completeWords
     .filter(
       (w) =>
         w.letters[letterIndex].letter !== null &&

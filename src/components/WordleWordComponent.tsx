@@ -1,28 +1,18 @@
-import { useState, useContext } from "react"
-import { WordleModelContext } from "../App"
+import { observer } from "mobx-react-lite"
+import { WordleWord } from "../model/WordleWord"
 import { WordleLetterComponent } from "./WordleLetterComponent"
 
 interface WordleWordComponentProps {
-    wordIndex: number
-    updateResults: () => void
+    viewModel: WordleWord
 }
 
-export function WordleWordComponent(props: WordleWordComponentProps) {
-    const ctx = useContext(WordleModelContext)
-    const word = ctx.history.words[props.wordIndex]
-
-    function removeWord() {
-        ctx.history.removeWord(props.wordIndex)
-        props.updateResults()
-    }
+export const WordleWordComponent = observer((props: WordleWordComponentProps) => {
+    const word = props.viewModel
 
     return <div className="wordle-word">
-        {word.letters.map((letter, letterIdx) => <WordleLetterComponent
-            wordIndex={props.wordIndex}
-            letterIndex={letterIdx}
-            updateResults={props.updateResults} />)}
+        {word.letters.map((letter, letterIdx) => <WordleLetterComponent viewModel={letter} />)}
         <div className="remove-word">
-            {props.wordIndex !== 0 ? <a onClick={removeWord}>&times;</a> : <></>}
+            {word.wordIndex !== 0 ? <a onClick={function () { word.remove() }}>&times;</a> : <></>}
         </div>
     </div>
-}
+})
